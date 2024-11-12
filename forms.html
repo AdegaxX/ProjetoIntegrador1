@@ -64,32 +64,49 @@
 
             document.getElementById("data-dia-util").innerText = `${diaSemana}, ${diaMes}/${mes}/${ano}`;
         }
-        // Executa ao carregar a página
-        window.onload = calcularProximoDia;
+
+        window.onload = function() {
+            calcularProximoDia();
+            const dadosSalvos = JSON.parse(localStorage.getItem("dadosFormulario")) || {};
+
+            if (dadosSalvos.nome) document.getElementById("nome").value = dadosSalvos.nome;
+            if (dadosSalvos.matricula) document.getElementById("matricula").value = dadosSalvos.matricula;
+            if (dadosSalvos.interesse) {
+                document.getElementById("interesse-checkbox").checked = dadosSalvos.interesse === "true";
+            }
+        };
 
         // Armazenando os dados inseridos:
         document.getElementById("meuFormulario").addEventListener("submit", function(event) {
             event.preventDefault();
 
             const nome = document.getElementById("nome").value;
-            const email = document.getElementById("email").value;
             const matricula = document.getElementById("matricula").value;
-            const interesse = document.getElementById("interesse").value;
+            const interesse = document.getElementById("interesse").checked;
 
         const dadosFormulario = {
             nome: nome,
-            email: email,
             matricula: matricula,
-            interesse: interesse
+            interesse: interesse.toString()
         };
 
         localStorage.setItem("dadosFormulario", JSON.stringify(dadosFormulario));
 
         alert("Dados salvos com sucesso!");
-
         document.getElementById("meuFormulario").reset();
         });
+
+        // Atualizar interesse no localStorage ao marcar ou desmarcar:
+        document.getElementById("interesse-checkbox").addEventListener("change", function() {
+            const interesseAtualizado = document.getElementById("interesse-checkbox").checked;
+            const dadosSalvos = JSON.parse(localStorage.getItem("dadosFormulario")) || {};
+
+            localStorage.setItem("dadosFormulario", JSON.stringify(dadosSalvos));
+        });
+
     </script>
+
+
     <style>
         body {
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
