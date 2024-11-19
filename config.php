@@ -5,12 +5,10 @@
     $dbPassword = '';
     $dbName = 'formulario_RU';
 
-    $conexao = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
+    $conexao = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName);
 
-    //if ($conexao -> connect_errno) {
-    //    echo "Erro";
-    //}
-    //else {
-    //    echo "Conecão efetuada com sucesso";
-    //}
+
+    if (!$conexao) {
+        die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
+    }
 ?>

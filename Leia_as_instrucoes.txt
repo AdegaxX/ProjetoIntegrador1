@@ -1,0 +1,389 @@
+1. Limitar o envio do formulário até as 21h
+Para restringir o envio do formulário até as 21h, você pode adicionar uma verificação no lado do cliente (JavaScript) e também no lado do servidor (PHP). A lógica seria a seguinte:
+
+No JavaScript:
+Adicione um script que bloqueie o envio do formulário se o horário atual for maior que 21h.
+
+javascript
+Copiar código
+document.getElementById("meuFormulario").addEventListener("submit", function(event) {
+    const agora = new Date();
+    const horaAtual = agora.getHours();
+
+    if (horaAtual >= 21) {
+        alert("O formulário só pode ser enviado até as 21h.");
+        event.preventDefault(); // Cancela o envio do formulário
+    }
+});
+No PHP:
+Inclua uma verificação no servidor para garantir que o formulário só será processado no horário permitido, mesmo que a validação do cliente seja burlada.
+
+php
+Copiar código
+if (isset($_POST['submit'])) {
+    $horaAtual = date('H'); // Hora atual no formato de 24h
+
+    if ($horaAtual >= 21) {
+        echo "<script>alert('O formulário só pode ser enviado até as 21h.');</script>";
+        exit; // Encerra a execução para evitar salvar os dados
+    }
+
+    // Código para salvar os dados no banco...
+}
+2. Permitir editar o 'interesse'
+Para que o usuário possa editar o interesse após o envio, é necessário implementar uma interface que permita carregar os dados do banco de dados e atualizá-los.
+
+Modifique o banco de dados:
+Certifique-se de que sua tabela tenha um identificador único (por exemplo, id) para os registros. Isso facilitará a edição.
+
+sql
+Copiar código
+ALTER TABLE usuarios ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY;
+No PHP:
+Crie uma página que permita buscar e editar o registro do usuário. Por exemplo:
+
+Passo 1: Carregar o registro existente
+Adicione um formulário com os dados atuais preenchidos para o usuário editar.
+
+php
+Copiar código
+<?php
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+
+    // Consultar o banco para obter os dados do usuário
+    $query = "SELECT * FROM usuarios WHERE id = $id";
+    $result = mysqli_query($conexao, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $usuario = mysqli_fetch_assoc($result);
+        $nome = $usuario['nome'];
+        $matricula = $usuario['matricula'];
+        $interesse = $usuario['interesse'];
+    } else {
+        echo "Usuário não encontrado.";
+        exit;
+    }
+}
+?>
+<form action="editar.php" method="POST">
+    <input type="hidden" name="id" value="<?= $id ?>">
+    <label for="nome">Nome:</label>
+    <input type="text" name="nome" value="<?= $nome ?>" required>
+    <label for="matricula">Matrícula:</label>
+    <input type="number" name="matricula" value="<?= $matricula ?>" required>
+    <label for="interesse">Interesse:</label>
+    <input type="checkbox" name="interesse" <?= $interesse == '1' ? 'checked' : '' ?>>
+    <button type="submit" name="editar">Salvar Alterações</button>
+</form>
+Passo 2: Atualizar o banco de dados
+Crie o código para processar a edição no arquivo editar.php.
+
+php
+Copiar código
+<?php
+if (isset($_POST['editar'])) {
+    $id = $_POST['id'];
+    $nome = $_POST['nome'];
+    $matricula = $_POST['matricula'];
+    $interesse = isset($_POST['interesse']) ? 1 : 0;
+
+    $query = "UPDATE usuarios SET nome = '$nome', matricula = '$matricula', interesse = '$interesse' WHERE id = $id";
+    $result = mysqli_query($conexao, $query);
+
+    if ($result) {
+        echo "<script>alert('Dados atualizados com sucesso!');</script>";
+    } else {
+        echo "<script>alert('Erro ao atualizar os dados.');</script>";
+    }
+}
+?>
+3. Fluxo completo para edição
+Crie um botão ou link na página principal para listar os registros existentes com a opção de editar. Por exemplo:
+php
+Copiar código
+<?php
+$query = "SELECT * FROM usuarios";
+$result = mysqli_query($conexao, $query);
+
+while ($row = mysqli_fetch_assoc($result)) {
+    echo "<p>{$row['nome']} ({$row['matricula']}) - Interesse: " . ($row['interesse'] ? 'Sim' : 'Não') . "</p>";
+    echo "<a href='editar.php?id={$row['id']}'>Editar</a>";
+}
+?>
+Na página de edição (editar.php), o formulário permite alterar os dados, incluindo o campo de interesse.
+O script editar.php processa e atualiza os dados no banco de dados.
+Esse fluxo garante que o usuário possa editar seus dados, incluindo o campo de interesse, após o envio inicial.
+
+
+
+
+
+Aqui está o código completo após as inserções para:
+
+1. Limitar o envio do formulário até as 21h.
+2. Permitir que o usuário edite o campo de interesse.
+
+Arquivo: formulario.php
+php
+Copiar código
+
+<?php
+include_once('config.php');
+
+if (isset($_POST['submit'])) {
+    // Verifica se o envio é permitido até as 21h
+    $horaAtual = date('H');
+    if ($horaAtual >= 21) {
+        echo "<script>alert('O formulário só pode ser enviado até as 21h.');</script>";
+        exit;
+    }
+
+    $nome = $_POST['nome'];
+    $matricula = $_POST['matricula'];
+    $interesse = isset($_POST['interesse']) ? 1 : 0;
+
+    $result = mysqli_query($conexao, "INSERT INTO usuarios(nome, matricula, interesse) VALUES ('$nome', '$matricula', '$interesse')");
+
+    if ($result) {
+        echo "<script>alert('Dados enviados com sucesso!');</script>";
+    } else {
+        echo "<script>alert('Erro ao enviar os dados.');</script>";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário RU</title>
+    <style>
+        body {
+            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            background-color: rgb(17,54,71);
+            font-size: 12px;
+        }
+        .box {
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            width: 20%;
+        }
+        fieldset {
+            border: 3px solid dodgerblue;
+        }
+        legend {
+            text-align: center;
+            border: 1px solid dodgerblue;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: dodgerblue;
+            color: white;
+        }
+        .inputBox {
+            position: relative;
+        }
+        .inputUser {
+            background: none;
+            border: none;
+            border-bottom: 1px solid white;
+            outline: none;
+            color: white;
+            font-size: 15px;
+            width: 100%;
+            letter-spacing: 2px;
+        }
+        .labelInput {
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            pointer-events: none;
+            transition: .5s;
+        }
+        img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 4px; 
+        }
+        .inputUser:focus ~ .labelInput {
+            top: 20px;
+            font-size: 12px;
+        }
+        button {
+            align-self: center;
+            background-color: dodgerblue;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            height: 25px;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+            border-radius: 5px;
+        }
+        img#brasao {
+            width: 50%;
+            vertical-align: middle;
+            position: relative;
+            bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <form action="formulario.php" method="POST" id="meuFormulario">
+            <div style="display: grid; place-items: center;">
+                <img src="brasao-cor-vertical.png" alt="brasao" id="brasao">
+            </div>
+            <fieldset>
+                <legend><b>RU Itapajé</b></legend>
+                <br>
+                <div class="inputBox" id="divnome">
+                    <input type="text" name="nome" id="nome" class="inputUser" required>
+                    <label for="nome">Nome completo</label>
+                </div>
+                <div class="inputBox" id="divmatricula">
+                    <input type="number" name="matricula" id="matricula" class="inputUser" required>
+                    <label for="matricula">Matrícula/SIAPE</label>
+                </div>
+                <div class="cardapio" id="divcardapio">
+                    <br>
+                    Cardápio semanal:
+                    <img src="cardapio.png" alt="cardapio">
+                </div>
+                <div id="proximo_dia">
+                    <p id="data-dia-util"></p>
+                </div>
+                <label for="interesse" class="checkbox-container" id="interesse">
+                    <input type="checkbox" name="interesse" id="interesse">
+                    Tenho interesse
+                </label>
+                <br><br>
+                <button type="submit" id="submit" name="submit">Enviar</button>
+            </fieldset>
+        </form>
+    </div>
+
+    <script>
+        // Calcula o próximo dia útil
+        function calcularProximoDia() {
+            const hoje = new Date();
+            let proximoDiaUtil = new Date(hoje);
+
+            proximoDiaUtil.setDate(hoje.getDate() + 1);
+
+            while (proximoDiaUtil.getDay() === 0 || proximoDiaUtil.getDay() === 6) {
+                proximoDiaUtil.setDate(proximoDiaUtil.getDate() + 1);
+            }
+
+            const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+            const diaSemana = diasSemana[proximoDiaUtil.getDay()];
+
+            const diaMes = String(proximoDiaUtil.getDate()).padStart(2, '0');
+            const mes = String(proximoDiaUtil.getMonth() + 1).padStart(2, '0');
+            const ano = proximoDiaUtil.getFullYear();
+
+            document.getElementById("data-dia-util").innerText = `${diaSemana}, ${diaMes}/${mes}/${ano}`;
+        }
+
+        // Bloqueia envio após as 21h
+        document.getElementById("meuFormulario").addEventListener("submit", function(event) {
+            const agora = new Date();
+            const horaAtual = agora.getHours();
+
+            if (horaAtual >= 21) {
+                alert("O formulário só pode ser enviado até as 21h.");
+                event.preventDefault();
+            }
+        });
+
+        // Executa ao carregar a página
+        window.onload = function() {
+            calcularProximoDia();
+        };
+    </script>
+</body>
+</html>
+
+
+Arquivo: editar.php
+php
+Copiar código
+
+<?php
+include_once('config.php');
+
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    $query = "SELECT * FROM usuarios WHERE id = $id";
+    $result = mysqli_query($conexao, $query);
+
+    if ($result && mysqli_num_rows($result) > 0) {
+        $usuario = mysqli_fetch_assoc($result);
+    } else {
+        echo "Usuário não encontrado.";
+        exit;
+    }
+}
+
+if (isset($_POST['editar'])) {
+    $id = $_POST['id'];
+    $nome = $_POST['nome'];
+    $matricula = $_POST['matricula'];
+    $interesse = isset($_POST['interesse']) ? 1 : 0;
+
+    $query = "UPDATE usuarios SET nome = '$nome', matricula = '$matricula', interesse = '$interesse' WHERE id = $id";
+    $result = mysqli_query($conexao, $query);
+
+    if ($result) {
+        echo "<script>alert('Dados atualizados com sucesso!');</script>";
+    } else {
+        echo "<script>alert('Erro ao atualizar os dados.');</script>";
+    }
+}
+?>
+
+<form action="editar.php" method="POST">
+    <input type="hidden" name="id" value="<?= $usuario['id'] ?>">
+    <label for="nome">Nome:</label>
+    <input type="text" name="nome" value="<?= $usuario['nome'] ?>" required>
+    <label for="matricula">Matrícula:</label>
+    <input type="number" name="matricula" value="<?= $usuario['matricula'] ?>" required>
+    <label for="interesse">Interesse:</label>
+    <input type="checkbox" name="interesse" <?= $usuario['interesse'] == 1 ? 'checked' : '' ?>>
+    <button type="submit" name="editar">Salvar Alterações</button>
+</form>
+
+
+Arquivo: config.php
+Configure a conexão com o banco de dados:
+
+php
+Copiar código
+
+<?php
+$host = "localhost";
+$user = "root";
+$pass = "";
+$db = "ru_itapaje";
+
+$conexao = mysqli_connect($host, $user, $pass, $db);
+
+if (!$conexao) {
+    die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
+}
+?>
+
+
+
+Resumo:
+1. formulario.php: Formulário com validações para horário e envio dos dados.
+2. editar.php: Permite editar registros.

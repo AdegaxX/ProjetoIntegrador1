@@ -1,20 +1,25 @@
 <?php
-    if (isset($_POST['submit'])) {
-        //print_r('nome: ' . $_POST['nome']);
-        //print_r('<br>');
-        //print_r('matricula: ' . $_POST['matricula']);
-        //print_r('<br>');
-        //print_r('interesse: ' . $_POST['interesse']);
-        //print_r('<br>');
-        
-        include_once('config.php');
+include_once('config.php');
 
-        $nome = $_POST['nome'];
-        $matricula = $_POST['matricula'];
-        $interesse = $_POST['interesse'];
-
-        $result = mysqli_query($conexao, "INSERT INTO usuarios(nome, matricula, interesse') VALUES ('$nome', '$matricula', '$interesse')");
+if (isset($_POST['submit'])) {
+    $horaAtual = date('H');  // hora atual no formulario de 24h
+    if ($horaAtual >= 21) {
+        echo "<script>alert("O formulário só pode ser enviado até as 21h.");</script>";
+        exit;   // Encerra a execução para evitar salvar os dados
     }
+
+    $nome = $_POST['nome'];
+    $matricula = $_POST['matricula'];
+    $interesse = $_POST['interesse'];
+
+    $result = mysqli_query($conexao, "INSERT INTO usuarios(nome, matricula, interesse') VALUES ('$nome', '$matricula', '$interesse')");
+
+    if ($result) {
+        echo "<script>alert('Dados enviados com sucesso!');</script>";
+    } else {
+        echo "<script>alert('Erro ao enviar os dados.');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -173,6 +178,16 @@
                 document.getElementById("interesse-checkbox").checked = dadosSalvos.interesse === "true";
             }
         };
+
+        document.getElementById("meuFormulario").addEventListener("submit", function(event) {
+            const hora = new Date();
+            const horaAtual = agora.getHours();
+
+            if (horaAtual >= 21) {
+                alert("O formulário só pode ser enviado até as 21h.")
+                event.preventDefault(); // cancela o envio do formulario
+            }
+        });
     
     </script>
 </body>
