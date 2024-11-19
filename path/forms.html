@@ -1,22 +1,3 @@
-<?php
-    if (isset($_POST['submit'])) {
-        //print_r('nome: ' . $_POST['nome']);
-        //print_r('<br>');
-        //print_r('matricula: ' . $_POST['matricula']);
-        //print_r('<br>');
-        //print_r('interesse: ' . $_POST['interesse']);
-        //print_r('<br>');
-        
-        include_once('config.php');
-
-        $nome = $_POST['nome'];
-        $matricula = $_POST['matricula'];
-        $interesse = $_POST['interesse'];
-
-        $result = mysqli_query($conexao, "INSERT INTO usuarios(nome, matricula, interesse') VALUES ('$nome', '$matricula', '$interesse')");
-    }
-?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -26,85 +7,6 @@
     <title>Formulário RU</title>
 </head>
 <body>
-
-    <style>
-        body {
-            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-            background-color: rgb(17,54,71);
-            font-size: 12px;
-        }
-        .box {
-            color: white;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 15px;
-            width: 20%;
-        }
-        fieldset {
-            border: 3px solid dodgerblue;
-        }
-        legend {
-            text-align: center;
-            border: 1px solid dodgerblue;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: dodgerblue;
-            color: white;
-        }
-        .inputBox {
-            position: relative;
-        }
-        .inputUser {
-            background: none;
-            border: none;
-            border-bottom: 1px solid white;
-            outline: none;
-            color: white;
-            font-size: 15px;
-            width: 100%;
-            letter-spacing: 2px;
-        }
-        .labelInput {
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            pointer-events: none;
-            transition: .5s;
-        }
-        img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            border-radius: 4px; 
-        }
-        .inputUser:focus ~ .labelInput {
-            top: 20px;
-            font-size: 12px;
-        }
-        button {
-            align-self: center;
-            background-color: dodgerblue;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            height: 25px;
-        }
-        button[type="submit"]:hover {
-            background-color: #0056b3;
-            border-radius: 5px;
-        }
-        img#brasao {
-            width: 50%;
-            vertical-align: middle;
-            position: relative;
-            bottom: 8px;
-        }
-        </style>
-
     <div class="box">
         <form action="formulario.php" method="POST" id="meuFormulario">
             <div style="display: grid; place-items: center;">
@@ -173,7 +75,114 @@
                 document.getElementById("interesse-checkbox").checked = dadosSalvos.interesse === "true";
             }
         };
-    
+
+        // Armazenando os dados inseridos:
+        document.getElementById("meuFormulario").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const nome = document.getElementById("nome").value;
+            const matricula = document.getElementById("matricula").value;
+            const interesse = document.getElementById("interesse").checked;
+
+        const dadosFormulario = {
+            nome: nome,
+            matricula: matricula,
+            interesse: interesse.toString()
+        };
+
+        localStorage.setItem("dadosFormulario", JSON.stringify(dadosFormulario));
+
+        alert("Dados salvos com sucesso!");
+        document.getElementById("meuFormulario").reset();
+        });
+
+        // Atualizar interesse no localStorage ao marcar ou desmarcar:
+        document.getElementById("interesse-checkbox").addEventListener("change", function() {
+            const interesseAtualizado = document.getElementById("interesse-checkbox").checked;
+            const dadosSalvos = JSON.parse(localStorage.getItem("dadosFormulario")) || {};
+
+            localStorage.setItem("dadosFormulario", JSON.stringify(dadosSalvos));
+        });
+
     </script>
+
+
+<style>
+body {
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    background-color: rgb(17,54,71);
+    font-size: 12px;
+}
+.box {
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 15px;
+    width: 20%;
+}
+fieldset {
+    border: 3px solid dodgerblue;
+}
+legend {
+    text-align: center;
+    border: 1px solid dodgerblue;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: dodgerblue;
+    color: white;
+}
+.inputBox {
+    position: relative;
+}
+.inputUser {
+    background: none;
+    border: none;
+    border-bottom: 1px solid white;
+    outline: none;
+    color: white;
+    font-size: 15px;
+    width: 100%;
+    letter-spacing: 2px;
+}
+.labelInput {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    pointer-events: none;
+    transition: .5s;
+}
+img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 4px; 
+}
+.inputUser:focus ~ .labelInput {
+    top: 20px;
+    font-size: 12px;
+}
+button {
+    align-self: center;
+    background-color: dodgerblue;
+    border: none;
+    color: white;
+    border-radius: 5px;
+    height: 25px;
+}
+button[type="submit"]:hover {
+    background-color: #0056b3;
+    border-radius: 5px;
+}
+img#brasao {
+    width: 50%;
+    vertical-align: middle;
+    position: relative;
+    bottom: 8px;
+}
+</style>
 </body>
 </html>
