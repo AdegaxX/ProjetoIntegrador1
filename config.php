@@ -2,8 +2,8 @@
 
     $dbHost = 'Localhost';
     $dbUsername = 'root';
-    $dbPassword = '';
-    $dbName = 'formulario_RU';
+    $dbPassword = 'semsenha';
+    $dbName = 'usuarios';
 
     $conexao = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName);
 
