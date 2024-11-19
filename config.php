@@ -1,14 +1,15 @@
 <?php
 
-    $dbHost = 'Localhost';
+    $dbHost = 'localhost';
     $dbUsername = 'root';
-    $dbPassword = 'semsenha';
+    $dbPassword = '';
     $dbName = 'usuarios';
 
-    $conexao = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName);
+    $conn = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName);
 
+    
 
-    if (!$conexao) {
+    if (!$conn) {
         die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
     }
 ?>

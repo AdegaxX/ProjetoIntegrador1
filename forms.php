@@ -1,148 +1,82 @@
 <?php
 include_once('config.php');
 
-if (isset($_POST['submit'])) {
-    $horaAtual = date('H');  // hora atual no formulario de 24h
-    if ($horaAtual >= 21) {
-        echo "<script>alert("O formulário só pode ser enviado até as 21h.");</script>";
-        exit;   // Encerra a execução para evitar salvar os dados
-    }
+// Configura o fuso horário do servidor
+date_default_timezone_set('America/Sao_Paulo');
 
-    $nome = $_POST['nome'];
-    $matricula = $_POST['matricula'];
-    $interesse = $_POST['interesse'];
+// Verifica se o horário atual é maior ou igual a 21 horas
+$currentHour = (int) date('H');
+if ($currentHour >= 21) {
+    echo "<script>
+        alert('O formulário não pode ser preenchido após as 21 horas.');
+        window.location.href = 'forms.php';
+    </script>";
+    exit;
+}
 
-    $result = mysqli_query($conexao, "INSERT INTO usuarios(nome, matricula, interesse') VALUES ('$nome', '$matricula', '$interesse')");
+// Manipulação do envio do formulário
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nome = trim($_POST['nome']);
+    $matricula = trim($_POST['matricula']);
+    $interesse = isset($_POST['interesse']) ? 1 : 0;
 
-    if ($result) {
-        echo "<script>alert('Dados enviados com sucesso!');</script>";
+    // Verifica se o usuário já existe
+    $queryCheck = "SELECT * FROM usuarios WHERE matricula = ?";
+    $stmtCheck = $conn->prepare($queryCheck);
+    $stmtCheck->bind_param("s", $matricula);
+    $stmtCheck->execute();
+    $resultCheck = $stmtCheck->get_result();
+
+    if ($resultCheck->num_rows > 0) {
+        echo "<script>
+            alert('Usuário já cadastrado! Redirecionando para edição...');
+            window.location.href = 'editar.php?matricula=$matricula';
+        </script>";
+        exit;
     } else {
-        echo "<script>alert('Erro ao enviar os dados.');</script>";
+        // Usuário não existe, insere novo registro
+        $queryInsert = "INSERT INTO usuarios (nome, matricula, interesse) VALUES (?, ?, ?)";
+        $stmtInsert = $conn->prepare($queryInsert);
+        $stmtInsert->bind_param("ssi", $nome, $matricula, $interesse);
+
+        if ($stmtInsert->execute()) {
+            echo "<script>alert('Usuário cadastrado com sucesso!');</script>";
+        } else {
+            echo "<script>alert('Erro ao cadastrar usuário.');</script>";
+        }
+        $stmtInsert->close();
     }
+
+    $stmtCheck->close();
+    $conn->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Formulário RU</title>
+    <title>Formulário RU Itapajé</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        form { width: 300px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; background-color: #fff; border-radius: 8px; }
+        input, button { width: 100%; padding: 10px; margin-bottom: 10px; }
+        button { background-color: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+    </style>
 </head>
 <body>
+    <form action="forms.php" method="POST">
+        <h2>Cadastro de Usuário</h2>
+        <input type="text" name="nome" placeholder="Nome" required>
+        <input type="text" name="matricula" placeholder="Matrícula" required>
+        <label>
+            <input type="checkbox" name="interesse"> Tenho interesse
+        </label>
+        <button type="submit">Cadastrar</button>
+    </form>
 
-    <style>
-        body {
-            font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-            background-color: rgb(17,54,71);
-            font-size: 12px;
-        }
-        .box {
-            color: white;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 15px;
-            border-radius: 15px;
-            width: 20%;
-        }
-        fieldset {
-            border: 3px solid dodgerblue;
-        }
-        legend {
-            text-align: center;
-            border: 1px solid dodgerblue;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: dodgerblue;
-            color: white;
-        }
-        .inputBox {
-            position: relative;
-        }
-        .inputUser {
-            background: none;
-            border: none;
-            border-bottom: 1px solid white;
-            outline: none;
-            color: white;
-            font-size: 15px;
-            width: 100%;
-            letter-spacing: 2px;
-        }
-        .labelInput {
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            pointer-events: none;
-            transition: .5s;
-        }
-        img {
-            width: 100%;
-            height: auto;
-            object-fit: cover;
-            border-radius: 4px; 
-        }
-        .inputUser:focus ~ .labelInput {
-            top: 20px;
-            font-size: 12px;
-        }
-        button {
-            align-self: center;
-            background-color: dodgerblue;
-            border: none;
-            color: white;
-            border-radius: 5px;
-            height: 25px;
-        }
-        button[type="submit"]:hover {
-            background-color: #0056b3;
-            border-radius: 5px;
-        }
-        img#brasao {
-            width: 50%;
-            vertical-align: middle;
-            position: relative;
-            bottom: 8px;
-        }
-        </style>
 
-    <div class="box">
-        <form action="formulario.php" method="POST" id="meuFormulario">
-            <div style="display: grid; place-items: center;">
-                <img src="brasao-cor-vertical.png" alt="brasao" id="brasao">
-            </div>
-            <fieldset>
-                <legend><b>RU Itapajé</b></legend>
-                <br>
-                <div class="inputBox" id="divnome">
-                    <input type="text" name="nome" id="nome" class="inputUser" required>
-                    <label for="nome">Nome completo</label>
-                </div>
-                <div class="inputBox" id="divmatricula">
-                    <input type="number" name="matricula" id="matricula" class="inputUser" required>
-                    <label for="matricula">Matrícula/SIAPE</label>
-                </div>
-                <div class="cardapio" id="divcardapio">
-                    <br>
-                    Cardápio semanal:
-                    <img src="cardapio.png" alt="cardapio">
-                </div>
-                <div id="proximo_dia">
-                    <p id="data-dia-util"></p>
-                </div>
-                <label for="interesse" class="checkbox-container" id="interesse">
-                    <input type="checkbox" name="interesse" id="interesse">
-                    Tenho interesse
-                </label>
-                <br><br>
-                <button type="submit" id="submit">Enviar</button>
-            </fieldset>
-        </form>
-    </div>
 
     <script>
         // Função para calcular automaticamente o prox dia útil do forms:
@@ -175,19 +109,19 @@ if (isset($_POST['submit'])) {
             if (dadosSalvos.nome) document.getElementById("nome").value = dadosSalvos.nome;
             if (dadosSalvos.matricula) document.getElementById("matricula").value = dadosSalvos.matricula;
             if (dadosSalvos.interesse) {
-                document.getElementById("interesse-checkbox").checked = dadosSalvos.interesse === "true";
+                document.getElementById("interesse").checked = dadosSalvos.interesse === "true";
             }
         };
 
-        document.getElementById("meuFormulario").addEventListener("submit", function(event) {
-            const hora = new Date();
-            const horaAtual = agora.getHours();
+        //document.getElementById("meuFormulario").addEventListener("submit", function(event) {
+        //    const hora = new Date();
+        //    const horaAtual = hora.getHours();
 
-            if (horaAtual >= 21) {
-                alert("O formulário só pode ser enviado até as 21h.")
-                event.preventDefault(); // cancela o envio do formulario
-            }
-        });
+        //    if (horaAtual >= 21) {
+        //        alert("O formulário só pode ser enviado até as 21h.")
+        //        event.preventDefault(); // cancela o envio do formulario
+        //    }
+        //});
     
     </script>
 </body>
