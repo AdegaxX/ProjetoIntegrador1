@@ -2,7 +2,7 @@
 // Pegue as informações do banco de dados pelas variáveis de ambiente
 $dbHost = getenv('MYSQLHOST') ?: 'mysql.railway.internal'; // Altere se necessário
 $dbUsername = 'root';
-$dbPassword = '';
+$dbPassword = 'semsenha';
 $dbName = 'railway';
 $dbPort = 3306;
 
