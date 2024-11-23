@@ -1,6 +1,6 @@
 <?php
 
-    $dbHost = 'mysql.railway.internal'; // Host do banco de dados no Railway
+    $dbHost = 'https://projetointegrador1-forms.up.railway.app/'; // Host do banco de dados no Railway
     $dbUsername = 'railway'; // Usuário do banco
     $dbPassword = 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf'; // Senha do banco
     $dbName = 'railway'; // Nome do banco
