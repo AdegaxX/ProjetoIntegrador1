@@ -1,6 +1,6 @@
 <?php
 // Pegue as informações do banco de dados pelas variáveis de ambiente
-$dbHost = 'mysql.railway.internal';
+$dbHost = 'mysql://root:KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf@junction.proxy.rlwy.net:45607/railway';
 $dbUsername = 'root';
 $dbPassword = 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf';
 $dbName = 'repositorio';
