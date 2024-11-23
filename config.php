@@ -1,15 +1,15 @@
 <?php
+// Pegue as informações do banco de dados pelas variáveis de ambiente
+$dbHost = getenv('MYSQLHOST') ?: 'mysql.railway.internal'; // Altere se necessário
+$dbUsername = 'root';
+$dbPassword = 'semsenha';
+$dbName = 'railway';
+$dbPort = 3306;
 
-    $dbHost = 'localhost';
-    $dbUsername = 'root';
-    $dbPassword = '';
-    $dbName = 'usuarios';
+// Conexão com o banco de dados
+$conn = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName, $dbPort);
 
-    $conn = mysqli_connect($dbHost, $dbUsername, $dbPassword, $dbName);
-
-    
-
-    if (!$conn) {
-        die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
-    }
+if (!$conn) {
+    die("Falha na conexão com o banco de dados: " . mysqli_connect_error());
+}
 ?>
