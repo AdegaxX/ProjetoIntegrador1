@@ -1,9 +1,9 @@
 <?php
 // Pegue as informações do banco de dados pelas variáveis de ambiente
-$dbHost = getenv('MYSQLHOST') ?: 'localhost';
+$dbHost = getenv('MYSQLHOST') ?: 'mysql.railway.internal';
 $dbUsername = getenv('MYSQLUSER') ?: 'root';
-$dbPassword = getenv('MYSQLPASSWORD') ?: '';
-$dbName = getenv('MYSQLDATABASE') ?: 'usuarios';
+$dbPassword = getenv('MYSQLPASSWORD') ?: 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf';
+$dbName = getenv('MYSQLDATABASE') ?: 'railway';
 $dbPort = getenv('MYSQLPORT') ?: 3306;
 
 // Conexão com o banco de dados
