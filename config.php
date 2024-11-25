@@ -1,6 +1,6 @@
 <?php
 // Pegue as informações do banco de dados pelas variáveis de ambiente
-$dbHost = '${{RAILWAY_PRIVATE_DOMAIN}}'; // Altere se necessário
+$dbHost = 'RAILWAY_PRIVATE_DOMAIN'; // Altere se necessário
 $dbUsername = 'root';
 $dbPassword = 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf';
 $dbName = '${{MYSQL_DATABASE}}';
