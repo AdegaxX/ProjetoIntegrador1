@@ -1,6 +1,6 @@
 <?php
 // Pegue as informações do banco de dados pelas variáveis de ambiente
-$dbHost = '/var/lib/mysql/Repositorio'; // Altere se necessário
+$dbHost = 'mysql.railway.internal'; // Altere se necessário
 $dbUsername = 'root';
 $dbPassword = 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf';
 $dbName = 'Repositorio';
