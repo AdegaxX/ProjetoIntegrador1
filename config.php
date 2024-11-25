@@ -3,7 +3,7 @@
 $dbHost = 'mysql.railway.internal'; // Altere se necessário
 $dbUsername = 'root';
 $dbPassword = 'KTgoLggUEvpjZrBNcoVJzDWeTmcQqVIf';
-$dbName = 'Repositorio';
+$dbName = 'railway';
 $dbPort = 3306;
 
 // Conexão com o banco de dados
