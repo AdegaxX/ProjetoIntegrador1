@@ -11,7 +11,11 @@ if (isset($_GET['matricula']) && !empty($_GET['matricula'])) {
     $stmt->bind_param("s", $matricula);
     $stmt->execute();
     $result = $stmt->get_result();
-
+    /*
+    if (!$result || $result->num_rows <= 0) {
+        die("Erro: Usuário não encontrado. Matrícula: " . $matricula);
+    }
+    */
     if ($result && $result->num_rows > 0) {
         $usuario = $result->fetch_assoc();
     } else {
