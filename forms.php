@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($resultCheck->num_rows > 0) {
         echo "<script>
             alert('Usuário já cadastrado! Redirecionando para edição...');
-            window.location.href = 'editar.php?matricula=" . htmlspecialchars($matricula, ENT_QUOTES, 'UTF-8') . "';
+            window.location.href = './editar.php?matricula=$matricula';
         </script>";
         exit;
     } else {
