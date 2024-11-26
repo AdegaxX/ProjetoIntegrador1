@@ -6,7 +6,7 @@ date_default_timezone_set('America/Sao_Paulo');
 
 // Verifica se o horário atual é maior ou igual a 21 horas
 $currentHour = (int) date('H');
-if ($currentHour >= 21) {
+if ($currentHour >= 23) {
     echo "<script>
         alert('O formulário não pode ser preenchido após as 21 horas.');
         window.location.href = 'forms.php';
