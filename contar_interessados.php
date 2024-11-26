@@ -23,10 +23,10 @@ if ($result && $row = $result->fetch_assoc()) {
 }
 
 // Configuração do e-mail
-$to = "seu-email@example.com"; // Altere para o seu e-mail
+$to = "ecommerce.adegas@gmail.com"; // Altere para o seu e-mail
 $subject = "Resumo de Interessados - " . date('d/m/Y');
 $message = "Total de interessados na refeição hoje: {$totalInteressados}.\n\nEsse e-mail foi enviado automaticamente pelo sistema.";
-$headers = "From: noreply@example.com";
+$headers = "From: leandroadegas2@gmail.com";
 
 // Envia o e-mail
 if (mail($to, $subject, $message, $headers)) {
