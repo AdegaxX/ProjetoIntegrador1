@@ -68,11 +68,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <form action="forms.php" method="POST">
         <h2>Cadastro de Usuário</h2>
-        <input type="text" name="nome" placeholder="Nome" required>
-        <input type="text" name="matricula" placeholder="Matrícula" required>
+        <input type="text" id="nome" name="nome" placeholder="Nome" required>
+        <input type="text" id="matricula" name="matricula" placeholder="Matrícula" required>
         <label>
-            <input type="checkbox" name="interesse"> Tenho interesse
+            <input type="checkbox" id="interesse" name="interesse"> Tenho interesse
         </label>
+        <p>Dia <span id="data-dia-util"></span></p>
         <button type="submit">Cadastrar</button>
     </form>
 
@@ -81,6 +82,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <script>
         // Função para calcular automaticamente o prox dia útil do forms:
         function calcularProximoDia() {
+            console.log("Função calcularProximoDia() chamada!"); # depuração
+
             const hoje = new Date();    // Dia atual
             let proximoDiaUtil = new Date(hoje);    // Atribui a data na variável
 
@@ -99,8 +102,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             const mes = String(proximoDiaUtil.getMonth() + 1).padStart(2, '0');
             const ano = proximoDiaUtil.getFullYear();
 
+            console.log(`Próximo dia útil: ${diaSemana}, ${diaMes}/${mes}/${ano}`) # Verifica no console
+            
             document.getElementById("data-dia-util").innerText = `${diaSemana}, ${diaMes}/${mes}/${ano}`;
         }
+
+        document.addEventListiner("DOMContentLoaded", function()) {
+            calcularProximoDia();
+        }
+        
 
         window.onload = function() {
             calcularProximoDia();
