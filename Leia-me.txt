@@ -1,0 +1,906 @@
+como faço para enviar um email de leandroadegas2@gmail.com para creedbr007@gmail.com que no seu conteúdo está escrito a quantidade de refeições, ou seja, interesse = 1 dos estudantes. o Email deve ser enviado às 21h03 de domingo a quinta
+
+Code:
+<?php
+include_once('config.php');
+
+// Configura o fuso horário do servidor
+date_default_timezone_set('America/Sao_Paulo');
+
+// Verifica se o horário atual é maior ou igual a 21 horas
+$currentHour = (int) date('H');
+if ($currentHour >= 21) {
+    echo "<script>
+        alert('O formulário não pode ser preenchido após as 21:00 horas.');
+        window.location.href = 'forms.php';
+    </script>";
+    exit;
+}
+
+// Manipulação do envio do formulário
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nome = trim($_POST['nome']);
+    $matricula = trim($_POST['matricula']);
+    $interesse = isset($_POST['interesse']) ? 1 : 0;
+
+    // Verifica se o usuário já existe
+    $queryCheck = "SELECT * FROM usuarios WHERE matricula = ?";
+    $stmtCheck = $conn->prepare($queryCheck);
+    $stmtCheck->bind_param("s", $matricula);
+    $stmtCheck->execute();
+    $resultCheck = $stmtCheck->get_result();
+
+    if ($resultCheck->num_rows > 0) {
+        echo "<script>
+            alert('Usuário já cadastrado! Você será redirecionado para edição!');
+            window.location.href = 'editar.php?matricula=$matricula';
+        </script>";
+        exit;
+    } else {
+        // Usuário não existe, insere novo registro
+        $queryInsert = "INSERT INTO usuarios (nome, matricula, interesse) VALUES (?, ?, ?)";
+        $stmtInsert = $conn->prepare($queryInsert);
+        $stmtInsert->bind_param("ssi", $nome, $matricula, $interesse);
+
+        if ($stmtInsert->execute()) {
+            echo "<script>alert('Usuário cadastrado com sucesso!');</script>";
+        } else {
+            echo "<script>alert('Erro ao cadastrar usuário.');</script>";
+        }
+        $stmtInsert->close();
+    }
+
+    // Contabiliza o número de interessados
+    $queryCount = "SELECT COUNT(*) AS total_interesse FROM usuarios WHERE interesse = 1";
+    $resultCount = $conn->query($queryCount);
+    $row = $resultCount->fetch_assoc();
+    $totalInteresse = $row['total_interesse'];
+
+    // Enviar e-mail com o número de interessados
+    $to = "creedbr007@gmail.com";  // Altere para o e-mail de destino
+    $subject = "Quantidade de interessados para refeição";
+    $message = "A quantidade total de pessoas com interesse na refeição é: " . $totalInteresse;
+    $headers = "From: leandroadegas2@gmail.com";  // Altere para seu e-mail de envio
+
+    // Envia o e-mail
+    if(mail($to, $subject, $message, $headers)) {
+        echo "<script>alert('E-mail enviado com sucesso!');</script>";
+    } else {
+        echo "<script>alert('Erro ao enviar o e-mail.');</script>";
+    }
+
+    $stmtCheck->close();
+    $conn->close();
+}
+?>
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário RU Itapajé</title>
+    <style>
+        .brasao {
+            width: 35%;
+            max-width: 450px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+
+        body { 
+            font-family: Arial, sans-serif;
+            background-color: #282A36;
+            color: black;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+        }
+
+        form {
+            width: auto;
+            max-width:auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #CCCCCC;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 30px ;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-family: Arial, sans-serif;
+            color: black;
+            font-size: 10px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        label input {
+            margin-right: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* checkbox: */
+        /* Container: Garante que tudo fique alinhado à esquerda */
+        .container {
+            display: flex;
+            justify-content: flex-start;
+            padding: 0; 
+            margin-bottom: 35px;
+        }
+        /* Label: Ajusta o alinhamento e espaçamento */
+        .check-label {
+            display: flex;
+            align-items: center; 
+            gap: 5px; 
+            font-size: 14px;
+            margin: 0; 
+            padding: 0; 
+        }
+        /* Checkbox: Remove espaçamentos padrão do input */
+        .check {
+            margin: 0; 
+            padding: 0; 
+        }
+
+        .carrossel {
+            margin: 20% auto;
+            text-align: center;
+        }
+        .carrossel img {
+            width: 100%;
+            max-width: 450px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <form action="forms.php" method="POST">
+        <img class="brasao" src="brasaoUFC.png" alt="brasaoUFC">
+        <h2>RU Itapajé - Demanda de refeição</h2>
+        <h3>
+            Preencha seus dados de identificação se deseja solicitar a refeição.
+            
+            <br><b>(Obs.: O preenchimento deve ser feito, no máximo, até as 21:00 horas do dia anterior ao da refeição pretendida)
+            <br><br>
+            Adote seu copo! O RU não disponibilizará mais copos descartáveis. Colabore com a conservação do planeta!
+            </b>
+        </h3>
+        <div>
+            <input type="text" pattern="[A-Za-z ]+" title="Somente letras" id="nome" name="nome" placeholder="Nome completo" required>
+            <input type="tel" maxlength="6" pattern="\d{6}" title="Erro: Insira todos os 6 números da matrícula" id="matricula" name="matricula" placeholder="Matrícula" required>
+
+            <div class="carrossel">
+                <img id="current-cardapio" src="CARDAPIO1.png" alt="Cardápio 1">
+            </div>
+        </div>
+
+        <div class="container">
+            <label class="check-label">
+                <input class="check" type="checkbox" id="interesse" name="interesse">
+                <span>Interesse</span>
+            </label>
+        </div>
+        <p><span id="data-dia-util"></span></p>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script>
+        // Função para calcular automaticamente o prox dia útil do forms:
+        function calcularProximoDia() {
+            //console.log("Função calcularProximoDia() chamada!"); // depuração
+
+            const hoje = new Date();    // Dia atual
+            let proximoDiaUtil = new Date(hoje);    // Atribui a data na variável
+
+            // Avança para o próximo dia
+            proximoDiaUtil.setDate(hoje.getDate() + 1);
+
+            while (proximoDiaUtil.getDay() == 0 || proximoDiaUtil.getDay() == 6) {  // Range para os dias úteis
+                proximoDiaUtil.setDate(proximoDiaUtil.getDate() + 1);
+            }
+
+            const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+            const diaSemana = diasSemana[proximoDiaUtil.getDay()];
+
+            // Formata o dia e o mês com dois dígitos
+            const diaMes = String(proximoDiaUtil.getDate()).padStart(2, '0');
+            const mes = String(proximoDiaUtil.getMonth() + 1).padStart(2, '0');
+            const ano = proximoDiaUtil.getFullYear();
+
+            console.log(Próximo dia útil: ${diaSemana}, ${diaMes}/${mes}/${ano}) // Debug
+
+            document.getElementById("data-dia-util").innerText = ${diaSemana}, ${diaMes}/${mes}/${ano};
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            calcularProximoDia();
+        });
+
+        // Cardápio automatico:
+        const cardapios = [
+            "CARDAPIO2.png",
+            "CARDAPIO3.png",
+            "CARDAPIO4.png",
+            "CARDAPIO1.png"
+        ];
+
+        //Calcula o cardápio:
+        function getCardapioSemana() {
+            const today = new Date();
+            const firstDayOfYear = new Date(today.getFullYear(), 0, 1);
+            const daysSinceStartOfYear = Math.floor((today - firstDayOfYear) / (1000 * 60 * 60 * 24));
+            const weekNumber = Math.floor(daysSinceStartOfYear / 7); // semanas completas desde o inicio do ano
+            return cardapios[weekNumber % cardapios.length];
+        }
+
+        // Atualiza o cardápio da semana no DOMINGO:
+        function updateCardapio() {
+            const cardapioImg = document.getElementById("current-cardapio");
+            const cardapioFile = getCardapioSemana();
+            cardapioImg.src = getCardapioSemana();
+            cardapioImg.style.display = "block";
+        }
+
+        // Inicia o formulario:
+            window.onload = function() {
+                calcularProximoDia();
+                updateCardapio();
+
+                // Preenche os dados salvos, se houver:
+                const dadosSalvos = JSON.parse(localStorage.getItem("dadosFormulario")) || {};
+                if (dadosSalvos.nome) document.getElementById("nome").value = dadosSalvos.nome;
+                if (dadosSalvos.matricula) document.getElementById("matricula").value = dadosSalvos.matricula;
+                if (dadosSalvos.interesse) {
+                    document.getElementById("interesse").checked = dadosSalvos === "true";
+                }
+            };
+
+
+
+
+
+
+    </script>
+</body>
+</html>
+
+O ChatGPT disse:
+ChatGPT
+Para agendar o envio do e-mail com a quantidade de refeições às 21h03 de domingo a quinta-feira, você pode seguir este plano:
+
+Criar um script PHP (enviar_email.php) que consulta a base de dados e envia o e-mail.
+Agendar a execução do script no servidor usando um cron job (Linux) ou uma tarefa agendada (Windows).
+Passo 1: Criar o Script PHP (enviar_email.php)
+Crie um arquivo chamado enviar_email.php e adicione o seguinte código:
+
+php
+Copiar
+Editar
+<?php
+include_once('config.php');
+
+// Configura o fuso horário do servidor
+date_default_timezone_set('America/Sao_Paulo');
+
+// Obtém o dia da semana (0 = domingo, 6 = sábado)
+$diaSemana = date('w');
+
+// Verifica se é domingo (0) até quinta-feira (4)
+if ($diaSemana >= 0 && $diaSemana <= 4) {
+
+    // Contabiliza o número de interessados (interesse = 1)
+    $queryCount = "SELECT COUNT(*) AS total_interesse FROM usuarios WHERE interesse = 1";
+    $resultCount = $conn->query($queryCount);
+    $row = $resultCount->fetch_assoc();
+    $totalInteresse = $row['total_interesse'];
+
+    // Configura os detalhes do e-mail
+    $to = "creedbr007@gmail.com";
+    $subject = "Quantidade de interessados para refeição";
+    $message = "A quantidade total de pessoas interessadas na refeição é: " . $totalInteresse;
+    $headers = "From: leandroadegas2@gmail.com\r\n";
+    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+    // Envia o e-mail
+    if (mail($to, $subject, $message, $headers)) {
+        echo "E-mail enviado com sucesso às 21h03!";
+    } else {
+        echo "Erro ao enviar o e-mail.";
+    }
+
+    $conn->close();
+} else {
+    echo "Hoje não é um dia válido para envio.";
+}
+?>
+Passo 2: Agendar a Execução do Script
+(A) Linux - Configurar um Cron Job
+Acesse o terminal do seu servidor e digite:
+sh
+Copiar
+Editar
+crontab -e
+Adicione a seguinte linha ao final do arquivo para rodar o script de domingo a quinta às 21h03:
+bash
+Copiar
+Editar
+3 21 * * 0-4 /usr/bin/php /caminho/do/seu/script/enviar_email.php
+🔹 Explicação do Cron Job:
+scss
+Copiar
+Editar
+3 21 * * 0-4 → Executa às 21h03 (3 minutos depois das 21h) de domingo (0) a quinta-feira (4)
+(B) Windows - Configurar uma Tarefa Agendada
+Abra o Agendador de Tarefas (taskschd.msc).
+Clique em Criar Tarefa.
+Na aba Gatilhos, clique em Novo:
+Início: Diário.
+Hora: 21:03.
+Dias da semana: Domingo a Quinta-feira.
+Na aba Ações, clique em Novo:
+Ação: Iniciar um programa.
+Programa/script: "C:\xampp\php\php.exe" (caminho do PHP).
+Adicionar argumentos: "C:\caminho\para\enviar_email.php".
+Clique em OK para salvar.
+Resumo
+✅ Criamos um script enviar_email.php para enviar o e-mail.
+✅ Configuramos um cron job (Linux) ou uma Tarefa Agendada (Windows) para rodá-lo às 21h03 de domingo a quinta-feira.
+
+Isso garantirá que o e-mail seja enviado automaticamente no horário correto! 🚀
+
+
+
+
+
+Você disse:
+o email não foi enviado
+O ChatGPT disse:
+ChatGPT
+Se o e-mail não foi enviado, siga este passo a passo para identificar e corrigir o problema.
+
+1️⃣ Verifique se o PHP está configurado para enviar e-mails
+O PHP usa a função mail(), que depende de um servidor SMTP configurado. Em muitos servidores locais (como XAMPP ou WAMP), essa funcionalidade não está ativa por padrão.
+
+Teste rápido: Enviar um e-mail manualmente
+Crie um arquivo teste_email.php com o seguinte código e execute-o:
+
+php
+Copiar
+Editar
+<?php
+$to = "creedbr007@gmail.com";
+$subject = "Teste de Envio de Email";
+$message = "Este é um teste de envio de e-mail via PHP.";
+$headers = "From: leandroadegas2@gmail.com";
+
+if (mail($to, $subject, $message, $headers)) {
+    echo "E-mail enviado com sucesso!";
+} else {
+    echo "Falha no envio do e-mail.";
+}
+?>
+Execute o script e veja se aparece "E-mail enviado com sucesso!".
+
+Se SIM: O problema pode estar no agendamento ou na consulta ao banco de dados.
+Se NÃO: O problema pode estar na configuração do servidor SMTP.
+2️⃣ Verifique os logs de erro do PHP
+Caso o e-mail não tenha sido enviado, ative os logs de erro do PHP adicionando isso no topo do seu arquivo PHP:
+
+php
+Copiar
+Editar
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+Isso pode mostrar mensagens úteis sobre o motivo do erro.
+
+3️⃣ Configure o envio de e-mail via SMTP (Recomendado)
+A função mail() do PHP pode não funcionar em todos os servidores. O ideal é usar uma biblioteca como PHPMailer, que permite o envio de e-mails via Gmail SMTP.
+
+Passo 1: Instalar PHPMailer
+Se estiver usando um servidor com Composer, instale o PHPMailer com:
+
+sh
+Copiar
+Editar
+composer require phpmailer/phpmailer
+Se não puder usar Composer, baixe o PHPMailer e inclua os arquivos no seu projeto.
+
+Passo 2: Criar um script com PHPMailer
+Substitua o código de envio de e-mail pelo seguinte:
+
+php
+Copiar
+Editar
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Se instalou via Composer
+// require 'PHPMailer/PHPMailer.php'; // Se baixou manualmente
+
+$mail = new PHPMailer(true);
+
+try {
+    // Configuração do servidor SMTP
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'leandroadegas2@gmail.com'; // Seu e-mail
+    $mail->Password   = 'SUA_SENHA_DO_APP'; // Use uma senha de aplicativo (veja abaixo)
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+
+    // Configuração do e-mail
+    $mail->setFrom('leandroadegas2@gmail.com', 'Leandro Adegas');
+    $mail->addAddress('creedbr007@gmail.com');
+    $mail->Subject = 'Quantidade de interessados para refeição';
+    $mail->Body    = 'A quantidade total de pessoas interessadas na refeição é: ' . $totalInteresse;
+
+    // Envia o e-mail
+    $mail->send();
+    echo 'E-mail enviado com sucesso!';
+} catch (Exception $e) {
+    echo "Erro ao enviar e-mail: {$mail->ErrorInfo}";
+}
+?>
+Passo 3: Criar uma Senha de Aplicativo do Gmail
+Se estiver usando um e-mail @gmail.com, pode ser necessário criar uma Senha de Aplicativo:
+
+Acesse Minhas Contas Google.
+Ative a Verificação em Duas Etapas.
+Vá até Senhas de Aplicativos e gere uma nova senha.
+Copie a senha e use no campo $mail->Password.
+4️⃣ Teste o script de novo
+Agora, execute o script PHP manualmente. Se funcionar, tente executar o cron job ou a tarefa agendada novamente.
+
+Conclusão
+🔹 Se mail() não funciona, configure o envio com PHPMailer + SMTP.
+🔹 Se o erro persistir, verifique os logs do PHP.
+🔹 Se estiver usando Gmail, gere uma Senha de Aplicativo.
+
+Com isso, o e-mail deve ser enviado corretamente! 🚀
+
+
+
+
+
+Você disse:
+composer require phpmailer/phpmailer
+como usar isso no cmd do Windows?
+O ChatGPT disse:
+ChatGPT
+Para executar o comando composer require phpmailer/phpmailer no CMD do Windows, siga estes passos:
+
+1️⃣ Verificar se o Composer está instalado
+Abra o Prompt de Comando (CMD) e digite:
+
+sh
+Copiar
+Editar
+composer -V
+Se aparecer a versão do Composer (exemplo: Composer version 2.x.x), ele já está instalado.
+
+Se der erro ou não reconhecer o comando, instale o Composer:
+
+Baixe e instale o Composer pelo site oficial: https://getcomposer.org/
+Durante a instalação, marque a opção para adicionar o Composer ao Path do sistema.
+Após instalar, feche o CMD e abra novamente para testar composer -V.
+
+2️⃣ Acessar o diretório do projeto
+No CMD, navegue até a pasta do seu projeto PHP onde deseja instalar o PHPMailer. Use o comando:
+
+sh
+Copiar
+Editar
+cd C:\caminho\para\seu\projeto
+Exemplo, se o projeto estiver em C:\xampp\htdocs\meu_projeto:
+
+sh
+Copiar
+Editar
+cd C:\xampp\htdocs\meu_projeto
+3️⃣ Instalar o PHPMailer
+Agora, dentro da pasta do projeto, execute:
+
+sh
+Copiar
+Editar
+composer require phpmailer/phpmailer
+Isso irá baixar e instalar o PHPMailer dentro da pasta vendor/ do seu projeto.
+
+Se tudo correr bem, você verá algo assim:
+
+bash
+Copiar
+Editar
+Using version x.x.x for phpmailer/phpmailer
+./composer.json has been updated
+Loading composer repositories with package information
+Updating dependencies (including require-dev)
+4️⃣ Como usar o PHPMailer no projeto
+Agora que o PHPMailer está instalado, adicione este código ao seu script para carregá-lo:
+
+php
+Copiar
+Editar
+require 'vendor/autoload.php'; // Inclui o PHPMailer automaticamente
+E utilize o exemplo de envio de e-mail via SMTP do Gmail:
+
+php
+Copiar
+Editar
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Carrega o PHPMailer automaticamente
+
+$mail = new PHPMailer(true);
+
+try {
+    // Configuração do servidor SMTP
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'leandroadegas2@gmail.com'; // Seu e-mail Gmail
+    $mail->Password   = 'SUA_SENHA_DO_APP'; // Use uma Senha de Aplicativo do Gmail
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+
+    // Configuração do e-mail
+    $mail->setFrom('leandroadegas2@gmail.com', 'Leandro Adegas');
+    $mail->addAddress('creedbr007@gmail.com');
+    $mail->Subject = 'Quantidade de interessados para refeição';
+    $mail->Body    = 'A quantidade total de pessoas interessadas na refeição é: X'; // Substitua X pelo número correto
+
+    // Envia o e-mail
+    $mail->send();
+    echo 'E-mail enviado com sucesso!';
+} catch (Exception $e) {
+    echo "Erro ao enviar e-mail: {$mail->ErrorInfo}";
+}
+?>
+5️⃣ Teste o envio de e-mail
+Agora, rode o script no seu servidor local ou via terminal usando:
+
+sh
+Copiar
+Editar
+php enviar_email.php
+Se o e-mail for enviado com sucesso, significa que está funcionando corretamente! 🚀
+
+
+
+
+
+Você disse:
+Microsoft Windows [versão 10.0.19045.5371]
+(c) Microsoft Corporation. Todos os direitos reservados.
+
+C:\Users\leand>composer require phpmailer/phpmailer
+'composer' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\Users\leand>composer -v
+'composer' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\Users\leand>composer -v
+'composer' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\Users\leand>php composer -v
+'php' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\Users\leand>C:\composer
+'C:\composer' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\Users\leand>cd C:\composer
+
+C:\composer>composer -v
+'php' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\composer>-v
+'-v' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\composer>composer -v
+'php' não é reconhecido como um comando interno
+ou externo, um programa operável ou um arquivo em lotes.
+
+C:\composer>
+O ChatGPT disse:
+ChatGPT
+Parece que o Composer não está instalado ou não foi adicionado ao Path do Windows. Siga estes passos para corrigir o problema:
+
+1️⃣ Instalar o Composer no Windows
+Se o Composer não está instalado, baixe e instale-o:
+
+Acesse: https://getcomposer.org/download/
+Clique em Composer-Setup.exe e instale.
+Durante a instalação, marque a opção para adicionar o Composer ao Path do sistema.
+2️⃣ Verificar se o Composer está no Path
+Após instalar, feche e reabra o Prompt de Comando (CMD) e digite:
+
+sh
+Copiar
+Editar
+composer -V
+Se ainda aparecer "não é reconhecido", significa que o Composer não foi adicionado ao Path. Para corrigir:
+
+Pressione Win + R, digite sysdm.cpl e pressione Enter.
+Vá até a aba Avançado e clique em Variáveis de Ambiente.
+Em Variáveis do Sistema, encontre e edite a variável "Path".
+Clique em "Novo" e adicione:
+makefile
+Copiar
+Editar
+C:\ProgramData\ComposerSetup\bin
+ou
+makefile
+Copiar
+Editar
+C:\Program Files\Composer
+Clique em OK e reinicie o computador.
+Agora, tente executar:
+
+sh
+Copiar
+Editar
+composer -V
+Se funcionar, vá para o próximo passo.
+
+3️⃣ Instalar o PHPMailer
+Agora, dentro da pasta do seu projeto, execute:
+
+sh
+Copiar
+Editar
+composer require phpmailer/phpmailer
+Isso instalará o PHPMailer na pasta vendor/.
+
+Se precisar de mais ajuda, me avise! 🚀
+
+
+
+
+
+Você disse:
+C:\xampp\htdocs\formulario>php enviar_relatorio.php
+PHP Warning:  Undefined variable $totalInteresse in C:\xampp\htdocs\formulario\enviar_relatorio.php on line 24
+
+Warning: Undefined variable $totalInteresse in C:\xampp\htdocs\formulario\enviar_relatorio.php on line 24
+E-mail enviado com sucesso!
+C:\xampp\htdocs\formulario>
+O ChatGPT disse:
+ChatGPT
+O erro "Undefined variable $totalInteresse" significa que a variável $totalInteresse não foi definida antes de ser usada na linha 24 do arquivo enviar_relatorio.php. Isso pode ocorrer porque a consulta ao banco de dados para contar os interessados não foi realizada corretamente.
+
+✅ Como corrigir esse erro
+Siga estes passos para garantir que a variável $totalInteresse seja definida corretamente:
+
+1️⃣ Verifique se a conexão com o banco de dados está funcionando
+No início do seu arquivo enviar_relatorio.php, adicione a conexão com o banco de dados:
+
+php
+Copiar
+Editar
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Carrega o PHPMailer automaticamente
+include_once('config.php'); // Arquivo de configuração do banco de dados
+
+// Verifica a conexão com o banco de dados
+if (!$conn) {
+    die("Erro na conexão com o banco de dados: " . mysqli_connect_error());
+}
+?>
+Se o banco não estiver conectado corretamente, ele mostrará um erro e interromperá o script.
+
+2️⃣ Certifique-se de que $totalInteresse está definido corretamente
+Logo após a conexão, adicione a consulta SQL para contar os estudantes interessados:
+
+php
+Copiar
+Editar
+// Consulta SQL para contar o número de interessados
+$queryCount = "SELECT COUNT(*) AS total_interesse FROM usuarios WHERE interesse = 1";
+$resultCount = $conn->query($queryCount);
+
+// Verifica se a consulta retornou um resultado válido
+if ($resultCount) {
+    $row = $resultCount->fetch_assoc();
+    $totalInteresse = $row['total_interesse'];
+} else {
+    $totalInteresse = 0; // Define como 0 caso a consulta falhe
+}
+Agora, $totalInteresse terá um valor válido e não causará mais erro de "Undefined variable".
+
+3️⃣ Enviar o e-mail corretamente
+Agora que $totalInteresse está garantido, adicione o código para enviar o e-mail:
+
+php
+Copiar
+Editar
+$mail = new PHPMailer(true);
+
+try {
+    // Configuração do servidor SMTP
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'leandroadegas2@gmail.com'; // Seu e-mail Gmail
+    $mail->Password   = 'SUA_SENHA_DO_APP'; // Use uma Senha de Aplicativo do Gmail
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+
+    // Configuração do e-mail
+    $mail->setFrom('leandroadegas2@gmail.com', 'Leandro Adegas');
+    $mail->addAddress('creedbr007@gmail.com');
+    $mail->Subject = 'Quantidade de interessados para refeição';
+    $mail->Body    = "A quantidade total de pessoas interessadas na refeição é: $totalInteresse";
+
+    // Envia o e-mail
+    $mail->send();
+    echo 'E-mail enviado com sucesso!';
+} catch (Exception $e) {
+    echo "Erro ao enviar e-mail: {$mail->ErrorInfo}";
+}
+4️⃣ Execute o script novamente
+Agora, execute novamente o comando no terminal (dentro do diretório correto do projeto):
+
+sh
+Copiar
+Editar
+php enviar_relatorio.php
+Se o banco de dados estiver configurado corretamente e o PHPMailer estiver instalado, o e-mail será enviado sem erro! 🚀
+
+
+
+
+
+Você disse:
+como o código inteiro deve ficar?
+O ChatGPT disse:
+ChatGPT
+Aqui está o código completo e corrigido para enviar um e-mail com a quantidade de estudantes interessados na refeição. Ele inclui:
+
+✅ Conexão com o banco de dados
+✅ Consulta SQL para contar os interessados
+✅ Configuração e envio do e-mail com PHPMailer
+✅ Manejo de erros para evitar variáveis indefinidas
+
+📌 Código Completo (enviar_relatorio.php)
+php
+Copiar
+Editar
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php'; // Carrega o PHPMailer automaticamente
+include_once('config.php'); // Arquivo de configuração do banco de dados
+
+// Configura o fuso horário para garantir a hora correta
+date_default_timezone_set('America/Sao_Paulo');
+
+// Verifica a conexão com o banco de dados
+if (!$conn) {
+    die("Erro na conexão com o banco de dados: " . mysqli_connect_error());
+}
+
+// Consulta SQL para contar o número de estudantes interessados (interesse = 1)
+$queryCount = "SELECT COUNT(*) AS total_interesse FROM usuarios WHERE interesse = 1";
+$resultCount = $conn->query($queryCount);
+
+// Verifica se a consulta foi bem-sucedida
+if ($resultCount) {
+    $row = $resultCount->fetch_assoc();
+    $totalInteresse = $row['total_interesse']; // Número total de interessados
+} else {
+    $totalInteresse = 0; // Se houver erro na consulta, assume que ninguém manifestou interesse
+}
+
+// **Configuração do PHPMailer**
+$mail = new PHPMailer(true);
+
+try {
+    // Configuração do servidor SMTP (Gmail)
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'leandroadegas2@gmail.com'; // Seu e-mail Gmail
+    $mail->Password   = 'SUA_SENHA_DO_APP'; // Senha de Aplicativo do Gmail
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+
+    // Configuração do e-mail (remetente e destinatário)
+    $mail->setFrom('leandroadegas2@gmail.com', 'Leandro Adegas');
+    $mail->addAddress('creedbr007@gmail.com'); // E-mail de destino
+
+    // Assunto e corpo do e-mail
+    $mail->Subject = 'Quantidade de interessados para refeição';
+    $mail->Body    = "A quantidade total de pessoas interessadas na refeição é: $totalInteresse";
+
+    // Enviar o e-mail
+    $mail->send();
+    echo '✅ E-mail enviado com sucesso!';
+} catch (Exception $e) {
+    echo "❌ Erro ao enviar e-mail: {$mail->ErrorInfo}";
+}
+
+// Fecha a conexão com o banco de dados
+$conn->close();
+?>
+🛠 Passos para garantir que funcione
+1️⃣ Configurar o Gmail para permitir o envio
+O Gmail bloqueia senhas normais para aplicativos como o PHPMailer. Para enviar e-mails, use uma Senha de Aplicativo:
+
+Acesse: https://myaccount.google.com/security
+Ative a verificação em duas etapas.
+Vá para Senhas de Aplicativos e gere uma senha para E-mail SMTP.
+Substitua SUA_SENHA_DO_APP no código pela senha gerada.
+2️⃣ Executar o código no CMD
+No Prompt de Comando (CMD), vá até a pasta onde o arquivo enviar_relatorio.php está salvo:
+
+sh
+Copiar
+Editar
+cd C:\xampp\htdocs\formulario
+E execute:
+
+sh
+Copiar
+Editar
+php enviar_relatorio.php
+Se tudo estiver configurado corretamente, o e-mail será enviado com sucesso! 🚀
+
+
+
+
+

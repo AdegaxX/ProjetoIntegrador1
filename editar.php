@@ -11,11 +11,7 @@ if (isset($_GET['matricula']) && !empty($_GET['matricula'])) {
     $stmt->bind_param("s", $matricula);
     $stmt->execute();
     $result = $stmt->get_result();
-    /*
-    if (!$result || $result->num_rows <= 0) {
-        die("Erro: Usuário não encontrado. Matrícula: " . $matricula);
-    }
-    */
+
     if ($result && $result->num_rows > 0) {
         $usuario = $result->fetch_assoc();
     } else {
@@ -55,6 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 $conn->close();
 ?>
+
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -62,22 +60,116 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Interesse</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        form { width: 300px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; background-color: #fff; border-radius: 8px; }
-        input, button { width: 100%; padding: 10px; margin-bottom: 10px; }
-        button { background-color: #007bff; color: white; border: none; border-radius: 4px; }
-        button:hover { background-color: #0056b3; }
+        .brasao {
+            width: 35%;
+            max-width: 450px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 8px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #282A36;
+            color: black;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+        }
+
+        form {
+            width: auto;
+            max-width:auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #CCCCCC;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 30px ;
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        label input {
+            margin-right: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2A9C01;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #46C001;
+        }
+
+        /* checkbox: */
+        .container {
+            display: flex;
+            justify-content: flex-start;
+            padding: 0; 
+            margin-bottom: 15px;
+        }
+        /* Label: Ajusta o alinhamento e espaçamento */
+        .check-label {
+            display: flex;
+            align-items: center; 
+            gap: 5px; 
+            font-size: 12px;
+            margin: 0; 
+            padding: 0; 
+        }
+        /* Checkbox: Remove espaçamentos padrão do input */
+        .check {
+            margin: 0; 
+            padding: 0; 
+        }
     </style>
 </head>
 <body>
+    
     <form action="editar.php?matricula=<?= htmlspecialchars($usuario['matricula'], ENT_QUOTES, 'UTF-8') ?>" method="POST">
+        <img class="brasao" src="brasaoUFC.png" alt="brasaoUFC">
+        
         <h2>Editar Interesse</h2>
+
         <input type="text" value="<?= htmlspecialchars($usuario['nome'], ENT_QUOTES, 'UTF-8') ?>" readonly>
+        
         <input type="text" name="matricula" value="<?= htmlspecialchars($usuario['matricula'], ENT_QUOTES, 'UTF-8') ?>" readonly>
-        <label>
-            <input type="checkbox" name="interesse" <?= $usuario['interesse'] == 1 ? 'checked' : '' ?>> Tenho interesse
-        </label>
-        <button type="submit">Salvar</button>
+        
+        <div class="container">    
+            <label class="check-label">
+                <input class="check" type="checkbox" name="interesse" <?= $usuario['interesse'] == 1 ? 'checked' : '' ?>> <span>Tenho interesse</span>
+            </label>
+        </div>
+
+        <button type="submit">Salvar edição</button>
+    
     </form>
 
     <script>
